@@ -17,6 +17,7 @@ class ProductListAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        request.data['author'] = request.user.id
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -36,6 +37,9 @@ class ProductDetailAPIView(APIView):
     
     def put(self, request, pk):
         product = self.get_object(pk=pk)
+        if request.user != product.author:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        request.data['author'] = request.user.id
         serializer = ProductSerializer(product, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -43,6 +47,8 @@ class ProductDetailAPIView(APIView):
         
     def delete(self, request, pk):
         product = self.get_object(pk=pk)
+        if request.user != product.author:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         product.delete()
         data = {"delete": f"{pk} is deleted."}
         return Response(data, status=status.HTTP_200_OK)
