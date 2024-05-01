@@ -38,3 +38,18 @@ class AccountDetailAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AccountPasswordAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        old_password = request.data['old_password']
+        new_password = request.data['new_password']
+        if user.check_password(old_password):
+            if not old_password == new_password:
+                user.set_password(new_password)
+                user.save()
+                return Response(status=status.HTTP_200_OK)
+                
