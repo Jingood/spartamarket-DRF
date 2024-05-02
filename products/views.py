@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,7 +14,9 @@ class ProductListAPIView(APIView):
 
     def get(self, request):
         products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
+        paginator = Paginator(products, 5)
+        page = paginator.get_page(paginator)
+        serializer = ProductSerializer(page, many=True)
         return Response(serializer.data)
 
     def post(self, request):
